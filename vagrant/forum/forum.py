@@ -59,7 +59,7 @@ def View(env, resp):
 ## Request handler for posting - inserts to database
 def Post(env, resp):
     '''Post handles a submission of the forum's form.
-  
+
     The message the user posted is saved in the database, then it sends a 302
     Redirect back to the main page so the user can see their new post.
     '''
@@ -96,7 +96,7 @@ def Dispatcher(env, resp):
     else:
         status = '404 Not Found'
         headers = [('Content-type', 'text/plain')]
-        resp(status, headers)    
+        resp(status, headers)
         return ['Not Found: ' + page]
 
 
