@@ -70,19 +70,6 @@ CREATE TABLE players ( id_player SERIAL,
                        PRIMARY KEY (id_player, tournament));
 
 
--- We create the round table to store all the round played in each tournament 
--- Variables:
---     id_round(SERIAL): an unique id for the round
---     tournament(INTEGER): a tournament where a round takes place.
--- Unique key:
---     the id_round, tournament pair has to be unique
-
--- CREATE TABLE rounds ( id_round SERIAL,
---                       r_level INTEGER,
---                       r_name TEXT,
---                       tournament INTEGER REFERENCES tournaments(id_tournament),
---                       PRIMARY KEY (id_round, tournament));
-
 -- We create the matches table to store all the characteristics of a matche in
 -- a given tournament at a given round.
 -- Variables:
