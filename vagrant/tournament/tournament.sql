@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS tournaments CASCADE;
 DROP TABLE IF EXISTS players CASCADE;
 DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS rounds CASCADE;
-
+DROP VIEW IF EXISTS playstats;
 
 -- We create the tournaments table to store all the informations about
 -- a given tournaments.
@@ -86,7 +86,6 @@ CREATE TABLE players ( id_player SERIAL,
 -- a given tournament at a given round.
 -- Variables:
 --     id_match(SERIAL): an unique id for the match
---     round(INTEGER): the id of the round when the match takes place
 --     score_p1(INTEGER): the score of the first player
 --     score_p2(INTEGER): the score of the second player
 --     tournament(INTEGER): a tournament where a player is registered in
@@ -95,7 +94,7 @@ CREATE TABLE players ( id_player SERIAL,
 --     id_p2(INTEGER): the unique id assigned to the second player/tournament
 --                     pair
 -- Unique key:
---     the id_match, round, tournament, id_p1, id_p2 quintet has to be unique
+--     the id_match, tournament, id_p1, id_p2 quartet has to be unique
 
 CREATE TABLE matches ( id_match SERIAL,
                        -- round INTEGER,
@@ -114,6 +113,11 @@ CREATE TABLE matches ( id_match SERIAL,
                        PRIMARY KEY (id_match, tournament, id_p1, id_p2));
 
 
-
+CREATE VIEW playstats AS
+    SELECT id_player, p_sname, p_name, t_name, wins, matches
+    FROM players, players_c, tournaments
+    WHERE players.id_player_c = players_c.id_player_c
+    AND tournaments.id_tournament = players.tournament
+    ORDER BY wins DESC;
 
 

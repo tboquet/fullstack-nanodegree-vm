@@ -79,10 +79,15 @@ def testRegisterTournament():
 
 
 def testRegisterPlayerTournament():
-    deleteTournaments()
     deleteMatches()
+    deletePlayers()
     deletePlayersC()
-    registerPlayerTournament("Chandra", "Nalaar")
+    deleteTournaments()
+    registerTournament("supertour")
+    t_id = getTournamentId("supertour")
+    registerPlayer("Chandra", "Nalaar")
+    p_id = getPlayerId("Chandra", "Nalaar")
+    registerPlayerTournament(p_id, t_id)
     c = countPlayers()
     if c != 1:
         raise ValueError(
@@ -144,18 +149,31 @@ def testStandingsBeforeMatches():
     deletePlayersC()
     deleteTournaments()
     registerTournament("supertour")
+    t_id = getTournamentId("supertour")
     registerPlayer("Melpomene", "Murray")
+    p1_id = getPlayerId("Melpomene", "Murray")
+    registerPlayerTournament(p1_id, t_id)
     registerPlayer("Randy", "Schwartz")
+    p2_id = getPlayerId("Randy", "Schwartz")
+    registerPlayerTournament(p2_id, t_id)
     standings = playerStandings()
+
     if len(standings) < 2:
         raise ValueError("Players should appear in playerStandings even before "
                          "they have played any matches.")
     elif len(standings) > 2:
         raise ValueError("Only registered players should appear in standings.")
+
     if len(standings[0]) != 6:
         raise ValueError("Each playerStandings row should have four columns.")
-    [(id1, p_sname1, p_name1, tournament, wins1, matches1),
-     (id2, p_sname2, p_name2, tournament, wins2, matches2)] = standings
+
+    [(id1, p_sname1, p_name1, tournament1, wins1, matches1),
+     (id2, p_sname2, p_name2, tournament2, wins2, matches2)] = standings
+
+    # added another condition to the test
+    if tournament1 != tournament2:
+        raise ValueError("Players should be registered in the same tournament.")
+
     if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0:
         raise ValueError(
             "Newly registered players should have no matches or wins.")
@@ -171,16 +189,25 @@ def testStandingsBeforeMatches():
 def testReportMatches():
     deleteMatches()
     deletePlayers()
-    registerPlayer("Bruno Walton")
-    registerPlayer("Boots O'Neal")
-    registerPlayer("Cathy Burton")
-    registerPlayer("Diane Grant")
+    deletePlayersC()
+    deleteTournaments()
+    registerTournament("supertour")
+    t_id = getTournamentId("supertour")
+    players = [("Bruno", "Walton"),
+               ("Boots", "O'Neal"),
+               ("Cathy", "Burton"),
+               ("Diane", "Grant")]
+    for player in players:
+        p_sname, p_name = player
+        registerPlayer(p_sname, p_name)
+        p_id = getPlayerId(p_sname, p_name)
+        registerPlayerTournament(p_id, t_id)
     standings = playerStandings()
     [id1, id2, id3, id4] = [row[0] for row in standings]
-    reportMatch(id1, id2)
-    reportMatch(id3, id4)
+    reportMatch(3, 2, t_id, id1, id2)
+    reportMatch(4, 2, t_id, id3, id4)
     standings = playerStandings()
-    for (i, n, w, m) in standings:
+    for (i, s, n, t, w, m) in standings:
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
         if i in (id1, id3) and w != 1:
@@ -193,19 +220,29 @@ def testReportMatches():
 def testPairings():
     deleteMatches()
     deletePlayers()
-    registerPlayer("Twilight Sparkle")
-    registerPlayer("Fluttershy")
-    registerPlayer("Applejack")
-    registerPlayer("Pinkie Pie")
+    deletePlayersC()
+    deleteTournaments()
+    registerTournament("supertour")
+    t_id = getTournamentId("supertour")
+    players = [("Twilight", "Sparkle"),
+               ("Flutter", "shy"),
+               ("Apple", "jack"),
+               ("Pinkie", "Pie")]
+    for player in players:
+        p_sname, p_name = player
+        registerPlayer(p_sname, p_name)
+        p_id = getPlayerId(p_sname, p_name)
+        registerPlayerTournament(p_id, t_id)
     standings = playerStandings()
     [id1, id2, id3, id4] = [row[0] for row in standings]
-    reportMatch(id1, id2)
-    reportMatch(id3, id4)
+    reportMatch(3, 2, t_id, id1, id2)
+    reportMatch(4, 2, t_id, id3, id4)
     pairings = swissPairings()
     if len(pairings) != 2:
         raise ValueError(
             "For four players, swissPairings should return two pairs.")
-    [(pid1, pname1, pid2, pname2), (pid3, pname3, pid4, pname4)] = pairings
+    [(pid1, psname1, pname1, pid2, psname2, pname2),
+     (pid3, psname3, pname3, pid4, psname4, pname4)] = pairings
     correct_pairs = set([frozenset([id1, id3]), frozenset([id2, id4])])
     actual_pairs = set([frozenset([pid1, pid2]), frozenset([pid3, pid4])])
     if correct_pairs != actual_pairs:

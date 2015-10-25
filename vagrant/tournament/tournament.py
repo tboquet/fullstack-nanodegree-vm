@@ -131,7 +131,30 @@ def registerPlayer(f_name, name):
     conn.close()
 
 
-def registerPlayerTournament(f_name, name):
+def getTournamentId(tournament_name):
+    # get the tournament's id
+    conn = connect()
+    c = conn.cursor()
+    query = "select id_tournament from tournaments where t_name={!r}"
+    c.execute(query.format(tournament_name))
+    t_id = c.fetchall()
+    conn.close()
+    return t_id[0][0]
+
+
+def getPlayerId(p_sname, p_name):
+    # get the player's id
+    conn = connect()
+    c = conn.cursor()
+    condition = "where p_sname={!r} and p_name={!r}".format(p_sname, p_name)
+    query = "select id_player_c from players_c " + condition
+    c.execute(query)
+    p_id = c.fetchall()
+    conn.close()
+    return p_id[0][0]
+
+
+def registerPlayerTournament(p_id, t_id):
     """Adds a player to the tournament database.
 
     The database assigns a unique serial id number for the player.  (This
@@ -141,25 +164,11 @@ def registerPlayerTournament(f_name, name):
         f_name(str): the player's first name.
         name(str): the player's name
     """
-    # First register a tournament and a player
-    registerTournament("supertour")
-    registerPlayer("Bob", "Morane")
-
-    # get the tournament's id
+    # register a player in a tournament
     conn = connect()
     c = conn.cursor()
-    query = "select id_tournament from tournaments where t_name='supertour'"
-    c.execute(query)
-    t_id = c.fetchall()
-
-    # get the player's id
-    query = "select id_player_c from players_c where p_name='Morane'"
-    c.execute(query)
-    p_id = c.fetchall()
-
-    # register a player in a tournament
     query = """insert into players (id_player_c, tournament) values ({!r}, {!r})"""
-    c.execute(query.format(p_id[0][0], t_id[0][0]))
+    c.execute(query.format(p_id, t_id))
     conn.commit() 
     conn.close()
 
@@ -182,70 +191,101 @@ def playerStandings():
     # get the tournament's id
     conn = connect()
     c = conn.cursor()
-    query = "select id_tournament from tournaments where t_name='supertour'"
-    c.execute(query)
-    t_id = c.fetchall()
-    my_players = [("Melpomene", "Murray"), ("Randy", "Schwartz")]
-    insert_values = []
-    p_ids = []
-    for player in my_players:
-        p_sname, p_name = player
-        # registerPlayer(p_sname, p_name)
+    # my_players = [("Melpomene", "Murray"), ("Randy", "Schwartz")]
+    # insert_values = []
+    # p_ids = []
+    # for player in my_players:
+    #     p_sname, p_name = player
+    #     # registerPlayer(p_sname, p_name)
 
-        # get the player's id
-        condition = "where p_sname={!r} and p_name={!r}".format(p_sname, p_name)
-        query = "select id_player_c from players_c " + condition
-        c.execute(query)
-        p_id = c.fetchall()
-        p_ids.append(p_id[0][0])
+    #     # get the player's id
+    #     condition = "where p_sname={!r} and p_name={!r}".format(p_sname, p_name)
+    #     query = "select id_player_c from players_c " + condition
+    #     c.execute(query)
+    #     p_id = c.fetchall()
+    #     print(p_id)
+    #     p_ids.append(p_id[0][0])
         
-        # build the insert values
-        insert_values.append("({!r}, {!r})".format(p_id[0][0], t_id[0][0]))
+    #     # build the insert values
+    #     insert_values.append("({!r}, {!r})".format(p_id[0][0], t_id[0][0]))
 
-    # join all the values
-    ins = ",".join(insert_values)
+    # # join all the values
+    # ins = ",".join(insert_values)
 
-    # register the players in the tournament
-    query = "insert into players \
-    (id_player_c, tournament) values {}".format(ins)
-    c.execute(query)
-    conn.commit()
+    # # register the players in the tournament
+    # query = "insert into players \
+    # (id_player_c, tournament) values {}".format(ins)
+    # c.execute(query)
+    # conn.commit()
     # search for these players in the players_c table
     
-    view = """DROP VIEW playstats;
-                CREATE VIEW playstats AS
-                SELECT id_player, p_sname, p_name, t_name, wins, matches
-                FROM players, players_c, tournaments
-                WHERE players.id_player_c = players_c.id_player_c
-                AND tournaments.id_tournament = players.tournament;"""
-    c.execute(view)
-    conn.commit()
+    # view = """DROP VIEW playstats;
+    #             CREATE VIEW playstats AS
+    #             SELECT id_player, p_sname, p_name, t_name, wins, matches
+    #             FROM players, players_c, tournaments
+    #             WHERE players.id_player_c = players_c.id_player_c
+    #             AND tournaments.id_tournament = players.tournament;"""
+    # c.execute(view)
+    # conn.commit()
     query = "select * from playstats;"
     c.execute(query)
     players_reg = c.fetchall()
     conn.close()
     return players_reg
 
-    # # build the inserts for the match
-    # assert p_ids[0] != p_ids[1], "You have to use two different player ids!"
-    # print(t_id)
-    # match_val = "(2, 3, {!r}, {!r}, {!r})".format(t_id[0][0],
-    #                                               p_ids[0],
-    #                                               p_ids[1])
-    # # add a new match between those 2 players
-    # query = "insert into matches \
-    # (score_p1, score_p2, tournament, id_p1, id_p2) values {}".format(match_val)
-    # print(query)
-    # conn.commit() 
 
 
-def reportMatch(winner, loser):
-    """Records the outcome of a single match between two players.
+def reportMatch(score_p1, score_p2, tournament, p1, p2):
+    """
+    MODIFIED THE FUNCTION TO RECORD THE SCORE
+    Records the outcome of a single match between two players.
 
     Args:
-      winner:  the id number of the player who won
-      loser:  the id number of the player who lost
+        id_p1:  the id number of the player 1
+        id_p2:  the id number of the player 2
+        score_p1: the score of the player 1
+        score_p2: the score of the player 2
+        tournament: the id number of the tournament
     """
+    conn = connect()
+    c = conn.cursor()
+    # build the inserts for the match
+    assert p1 != p2, "You have to use two different player ids!"
+    match_val = "({!r}, {!r}, {!r}, {!r}, {!r})".format(score_p1,
+                                                        score_p2,
+                                                        tournament,
+                                                        p1,
+                                                        p2)
+    # add a new match between those 2 players
+    query = "insert into matches \
+    (score_p1, score_p2, tournament, id_p1, id_p2) values {}".format(match_val)
+
+    c.execute(query)
+    conn.commit()
+
+    # update matches in the players table
+    
+    condition = "where id_player = {} or id_player = {};".format(p1, p2)
+    query = "update players set matches = matches + 1 {}"
+    c.execute(query.format(condition))
+    conn.commit()
+
+    # update wins in the player table
+    if score_p1 > score_p2:
+        condition = "where id_player = {};".format(p1)
+        query = "update players set wins = wins + 1 {}"
+        c.execute(query.format(condition))
+        conn.commit()
+    elif score_p2 > score_p1:
+        condition = "where id_player = {};".format(p2)
+        query = "update players set wins = wins + 1 {}"
+        c.execute(query.format(condition))
+        conn.commit()
+    else:
+        condition = "where id_player = {};".format(p1)
+        query = "update players set wins = wins + 1 {}"
+
+    conn.close()
 
 
 def swissPairings():
@@ -264,4 +304,14 @@ def swissPairings():
         name2: the second player's name
     """
 
-
+    conn = connect()
+    c = conn.cursor()
+    standings = playerStandings()
+    # because the view returns players ordered by wins
+    l_of_tup = []
+    for i in range(0, len(standings)-1, 2):
+        p1 = standings[i]
+        p2 = standings[i+1]
+        l_of_tup.append((p1[0], p1[1], p1[2],
+                         p2[0], p2[1], p2[2]))
+    return l_of_tup 
