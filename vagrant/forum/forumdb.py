@@ -1,6 +1,6 @@
 #
 # Database access functions for the web forum.
-# 
+#
 
 import time
 import psycopg2

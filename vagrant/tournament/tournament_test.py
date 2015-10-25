@@ -164,11 +164,11 @@ def testStandingsBeforeMatches():
     elif len(standings) > 2:
         raise ValueError("Only registered players should appear in standings.")
 
-    if len(standings[0]) != 6:
-        raise ValueError("Each playerStandings row should have four columns.")
+    if len(standings[0]) != 7:
+        raise ValueError("Each playerStandings row should have seven columns.")
 
-    [(id1, p_sname1, p_name1, tournament1, wins1, matches1),
-     (id2, p_sname2, p_name2, tournament2, wins2, matches2)] = standings
+    [(id1, p_sname1, p_name1, tournament1, wins1, matches1, t1_id),
+     (id2, p_sname2, p_name2, tournament2, wins2, matches2, t2_id)] = standings
 
     # added another condition to the test
     if tournament1 != tournament2:
@@ -207,7 +207,7 @@ def testReportMatches():
     reportMatch(3, 2, t_id, id1, id2)
     reportMatch(4, 2, t_id, id3, id4)
     standings = playerStandings()
-    for (i, s, n, t, w, m) in standings:
+    for (i, s, n, t, w, m, t_id) in standings:
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
         if i in (id1, id3) and w != 1:
@@ -217,7 +217,7 @@ def testReportMatches():
     print "7. After a match, players have updated standings."
 
 
-def testPairings():
+def testPairingsPython():
     deleteMatches()
     deletePlayers()
     deletePlayersC()
@@ -237,7 +237,42 @@ def testPairings():
     [id1, id2, id3, id4] = [row[0] for row in standings]
     reportMatch(3, 2, t_id, id1, id2)
     reportMatch(4, 2, t_id, id3, id4)
-    pairings = swissPairings()
+    pairings = swissPairingsSQL()
+    if len(pairings) != 2:
+        raise ValueError(
+            "For four players, swissPairings should return two pairs.")
+    [(pid1, psname1, pname1, pid2, psname2, pname2),
+     (pid3, psname3, pname3, pid4, psname4, pname4)] = pairings
+    correct_pairs = set([frozenset([id1, id3]), frozenset([id2, id4])])
+    actual_pairs = set([frozenset([pid1, pid2]), frozenset([pid3, pid4])])
+    if correct_pairs != actual_pairs:
+        raise ValueError(
+            "After one match, players with one win should be paired.")
+    print "8. After one match, players with one win are paired."
+
+
+def testPairingsSQL():
+    deleteMatches()
+    deletePlayers()
+    deletePlayersC()
+    deleteTournaments()
+    registerTournament("supertour")
+    t_id = getTournamentId("supertour")
+    players = [("Twilight", "Sparkle"),
+               ("Flutter", "shy"),
+               ("Apple", "jack"),
+               ("Pinkie", "Pie")]
+    for player in players:
+        p_sname, p_name = player
+        registerPlayer(p_sname, p_name)
+        p_id = getPlayerId(p_sname, p_name)
+        registerPlayerTournament(p_id, t_id)
+    standings = playerStandings()
+    [id1, id2, id3, id4] = [row[0] for row in standings]
+    reportMatch(3, 2, t_id, id1, id2)
+    reportMatch(4, 2, t_id, id3, id4)
+    pairings = swissPairingsSQL()
+    print(pairings)
     if len(pairings) != 2:
         raise ValueError(
             "For four players, swissPairings should return two pairs.")
@@ -265,7 +300,9 @@ if __name__ == '__main__':
     testRegisterCountDeletePlayer()
     testStandingsBeforeMatches()
     testReportMatches()
-    testPairings()
+
+    testPairingsSQL()
+    testPairingsPython()
     print "Success!  All tests pass!"
 
 

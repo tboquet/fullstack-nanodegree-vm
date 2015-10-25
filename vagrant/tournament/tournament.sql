@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS players CASCADE;
 DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS rounds CASCADE;
 DROP VIEW IF EXISTS playstats;
+DROP VIEW IF EXISTS pairing;
 
 -- We create the tournaments table to store all the informations about
 -- a given tournaments.
@@ -107,17 +108,35 @@ CREATE TABLE matches ( id_match SERIAL,
                                    players(id_player, tournament),
                        FOREIGN KEY (id_p2, tournament) REFERENCES
                                    players(id_player, tournament),
-                       -- FOREIGN KEY (round, tournament) REFERENCES
-                                   -- rounds(id_round, tournament),
-                       -- PRIMARY KEY (id_match, round, tournament, id_p1, id_p2));
                        PRIMARY KEY (id_match, tournament, id_p1, id_p2));
 
 
+-- A view to retrieve players characteristics, names and tournaments infos
+
 CREATE VIEW playstats AS
-    SELECT id_player, p_sname, p_name, t_name, wins, matches
+    SELECT id_player, p_sname, p_name, t_name, wins, matches, tournament
     FROM players, players_c, tournaments
     WHERE players.id_player_c = players_c.id_player_c
     AND tournaments.id_tournament = players.tournament
     ORDER BY wins DESC;
 
 
+-- A view to add the ranking of each player
+
+CREATE VIEW interrank AS
+       SELECT id_player, p_sname, p_name, wins, matches, tournament, t_name,
+       int4(row_number() over(order by wins)) as r1
+       from playstats
+       order by wins DESC;
+
+
+-- A view to build pairs of adjacent players in terms of ranking
+
+CREATE VIEW pairing AS
+    SELECT ir1.id_player as id1, ir1.p_sname as p1_sname, ir1.p_name as p1_name,
+           ir2.id_player as idp2, ir2.p_sname as p2_sname, ir2.p_name as p2_name
+    FROM interrank as ir1, interrank as ir2
+    WHERE ir1.tournament = ir2.tournament
+    AND ir1.matches = ir2.matches
+    AND ir1.r1=(ir2.r1-1)
+    AND ir2.r1%2=0;
