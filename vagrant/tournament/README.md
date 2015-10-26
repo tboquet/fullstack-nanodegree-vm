@@ -1,7 +1,7 @@
 Tournament project
 ------------------
 
-This projects implements a basic database and python module to store, rank and pair the players up in matches in a tournament.
+This project build an sql database and implements a basic python module to store, rank and pair the players up in matches in a tournament.
 
 Three files are in the folder :
 
@@ -13,8 +13,10 @@ How to?
 *******
 
 1. navigate to the directory where you downloaded the files in a command prompt
-2. log in the tournament db in postgreql using `psql tournament`
+2. log in the tournament db in postgreql using `psql tournament`[^1]
 3. run `\i tournament.sql` in postgresql
 4. quit postgersql using `\q`
 5. run the `tournament_test.py` using the command `python tournament_test.py`
 
+[^1]:
+if the database is not created log in postgresql using `psql` and type `create database tournament;`.
