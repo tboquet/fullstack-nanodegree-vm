@@ -4,6 +4,7 @@
 #
 
 import psycopg2
+import bleach
 
 
 def connect():
@@ -29,6 +30,7 @@ def deleteMatches():
     c.execute(query)
     conn.commit()
     conn.close()
+
 
 
 def deletePlayersC():
@@ -104,9 +106,9 @@ def registerTournament(t_name):
         t_name(str): the tournament's name.
     """
     conn = connect()
+    t_name = bleach.clean(t_name)
     query = "insert into tournaments (t_name) values (%s)"
     c = conn.cursor()
-
     c.execute(query, (t_name,))
     conn.commit() 
     conn.close()
@@ -122,6 +124,8 @@ def registerPlayer(f_name, name):
         name(str): the player's name
     """
     conn = connect()
+    f_name = bleach.clean(f_name)
+    name = bleach.clean(name)
     query = "insert into players_c (p_sname, p_name) values (%s, %s)"
     c = conn.cursor()
     c.execute(query, (f_name, name))
@@ -144,6 +148,7 @@ def getTournamentId(tournament_name):
     # get the tournament's id
     conn = connect()
     c = conn.cursor()
+    tournament_name = bleach.clean(tournament_name)
     query = "select id_tournament from tournaments where t_name=%s"
     c.execute(query, (tournament_name,))
     t_id = c.fetchall()
@@ -167,6 +172,8 @@ def getPlayerId(p_sname, p_name):
     # get the player's id
     conn = connect()
     c = conn.cursor()
+    p_sname = bleach.clean(p_sname)
+    p_name = bleach.clean(p_name)
     condition = "where p_sname=%s and p_name=%s"
     query = "select id_player_c from players_c " + condition
     c.execute(query, (p_sname, p_name))
@@ -189,6 +196,7 @@ def registerPlayerTournament(p_id, t_id):
     # register a player in a tournament
     conn = connect()
     c = conn.cursor()
+    # no need to clean because we get this data from the db
     query = """insert into players (id_player_c, tournament) values (%s, %s)"""
     c.execute(query, (p_id, t_id))
     conn.commit() 
