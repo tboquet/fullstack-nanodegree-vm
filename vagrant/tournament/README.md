@@ -1,7 +1,7 @@
 Tournament project
 ------------------
 
-This project build an sql database and implements a basic python module to store, rank and pair the players up in matches in a tournament.
+This project build a sql database and implements a basic python module to store, rank and pair the players up in matches in a tournament.
 
 Three files are in the folder :
 
