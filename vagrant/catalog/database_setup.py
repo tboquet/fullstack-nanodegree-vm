@@ -31,6 +31,7 @@ class Category(Base):
 
         return {
             'name': self.name,
+            'image_loc': self.image_loc,
             'id': self.id,
         }
 
@@ -54,6 +55,8 @@ class CatalogItem(Base):
         return {
             'name': self.name,
             'description': self.description,
+            'image_loc': self.image_loc,
+            'category_id': self.category_id,
             'id': self.id,
         }
 
