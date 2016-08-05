@@ -12,7 +12,7 @@ five files are in the folder:
 - `catalogitem.py` is a script that implements the application.
 
  To run it:
- ~~~~~~~~~~
+===========
 
 1. Navigate to the directory where you downloaded the files
 2. run the `database_setup.py` script to create the tables in the db
