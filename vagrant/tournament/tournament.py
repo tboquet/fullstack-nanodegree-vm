@@ -7,8 +7,6 @@ import psycopg2
 import bleach
 
 
-
-
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
@@ -32,7 +30,6 @@ def deleteMatches():
     c.execute(query)
     conn.commit()
     conn.close()
-
 
 
 def deletePlayersC():
@@ -112,7 +109,7 @@ def registerTournament(t_name):
     query = "insert into tournaments (t_name) values (%s)"
     c = conn.cursor()
     c.execute(query, (t_name,))
-    conn.commit() 
+    conn.commit()
     conn.close()
 
 
@@ -131,7 +128,7 @@ def registerPlayer(f_name, name):
     query = "insert into players_c (p_sname, p_name) values (%s, %s)"
     c = conn.cursor()
     c.execute(query, (f_name, name))
-    conn.commit() 
+    conn.commit()
     conn.close()
 
 
@@ -193,7 +190,7 @@ def registerPlayerTournament(p_id, t_id):
 
     Args:
         p_id(int): the player's unique id from the players_c table.
-        t_id(int): the tournament's unique id from the tournaments table 
+        t_id(int): the tournament's unique id from the tournaments table
     """
     # register a player in a tournament
     conn = connect()
@@ -201,15 +198,15 @@ def registerPlayerTournament(p_id, t_id):
     # no need to clean because we get this data from the db
     query = """insert into players (id_player_c, tournament) values (%s, %s)"""
     c.execute(query, (p_id, t_id))
-    conn.commit() 
+    conn.commit()
     conn.close()
 
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    The first entry in the list should be the player in first place, or a
+    player tied for first place if there is currently a tie.
 
     Returns:
       A list of tuples, each of which contains (id, p_sname, p_name, tournament
@@ -254,7 +251,7 @@ def reportMatch(score_p1, score_p2, tournament, p1, p2):
     conn.commit()
 
     # update matches variable in the players table
-    
+
     condition = "where id_player = {} or id_player = {};".format(p1, p2)
     query = "update players set matches = matches + 1 {}"
     c.execute(query.format(condition))
@@ -302,7 +299,7 @@ def swissPairingsPython():
         p2 = standings[i+1]
         l_of_tup.append((p1[0], p1[1], p1[2],
                          p2[0], p2[1], p2[2]))
-    return l_of_tup 
+    return l_of_tup
 
 
 def swissPairingsSQL():
