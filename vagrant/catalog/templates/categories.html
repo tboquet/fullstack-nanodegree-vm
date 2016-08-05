@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Shop Homepage - Start Bootstrap Template</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='css/shop-homepage.css') }}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{{ url_for('showCategories') }}">Catalog App</a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    {% if session['provider'] %}
+                    <li>
+                        <a href="#">{{ session.username }}</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('disconnect') }}">Logout</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{ url_for('showLogin') }}">Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-md-3">
+                <p class="lead">Categories</p>
+                <div class="list-group">
+                    {% for category in categories %}
+                        <a href = "{{url_for('showCategory', category_name = category.name)}}" class="list-group-item"">{{category.name}}</a>
+                    {% endfor %}
+                    {% if session['provider'] %}
+                        <a href="{{url_for('newCategory')}}" class="list-group-item">Create Category</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-9">
+
+              {% with messages = get_flashed_messages() %}
+                {% if messages %}
+
+                  <ul>
+                  {% for message in messages %}
+                      <li> <strong> {{ message }} </strong> </li>
+                  {% endfor %}
+                  </ul>
+                  {% endif %}
+              {% endwith %}
+
+                <div class="row carousel-holder">
+
+                    <div class="col-md-12">
+                        <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+                            <ol class="carousel-indicators">
+                                {% for category in categories %}
+                                    <li data-target="#carousel-example-generic" data-slide-to="{{ loop.index0 }}"></li>
+                                {% endfor %}
+                            </ol>
+                            <div class="carousel-inner">
+                                {% for category in categories %}
+                                    {% if loop.first %}
+                                        <div class="item active">
+                                    {% else %}
+                                        <div class="item">
+                                    {% endif %}
+                                        <a href="{{url_for('showCategory', category_name = category.name)}}"> <img class="slide-image" src={{ category.image_loc }} alt={{ category.name }}}></a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+                                <span class="glyphicon glyphicon-chevron-left"></span>
+                            </a>
+                            <a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+                                <span class="glyphicon glyphicon-chevron-right"></span>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    {% if items %}
+                        <h2>9 latest Items </h2>
+                        {% for item, cat in items %}
+
+                            <div class="col-sm-4 col-lg-4 col-md-4">
+
+                                <div class="thumbnail">
+                                    <a href="{{ url_for('showCatalogItem', item_name=item.name, category_name=cat.name)}}"><img class="img-responsive img-rounded" src="{{ item.image_loc }}" alt=""></a>
+                                    <div class="caption">
+                                        <h4><a href="{{ url_for('showCatalogItem', item_name=item.name, category_name=cat.name)}}">{{ item.name }}</a></h4>
+                                        <h5><a href="{{url_for('showCategory', category_name = cat.name)}}">({{ cat.name }})</a></h5>
+                                        <div class="break">
+                                            <p>{{ item.description }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /.container -->
+
+    <div class="container">
+
+        <hr>
+
+        <!-- Footer -->
+        <footer>
+            <div class="row">
+                <div class="col-lg-12">
+                    <p>Copyright &copy; Thomas Boquet 2016</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+    <!-- /.container -->
+
+    <!-- jQuery -->
+    <script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+</body>
+
+</html>
