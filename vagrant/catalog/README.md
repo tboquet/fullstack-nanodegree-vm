@@ -27,3 +27,5 @@ You can access several json endpoints:
 - all the items in the database: `/category/all/JSON`
 - one specific item in the database: `/category/<category_name>/<item_name>/JSON`
 - all the categories in the database: `/category/JSON`
+
+The modified boostrap template comes from the [startbootstrap-shop=homepage](https://github.com/BlackrockDigital/startbootstrap-shop-homepage) repo.
