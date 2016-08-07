@@ -9,7 +9,7 @@ from flask import (Flask, render_template, request, redirect,
                    jsonify, url_for, flash)
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import desc
+from sqlalchemy import desc, and_
 from database_setup import Base, Category, CatalogItem, User
 
 from flask import session as login_session
@@ -304,9 +304,12 @@ def disconnect():
 
 @app.route('/category/<string:category_name>/JSON')
 def categoryCatalogJSON(category_name):
-    items = session.query(CatalogItem).filter_by(
-        category_name=category_name).all()
-    return jsonify(CatalogItems=[i.serialize for i in items])
+    items = session.query(
+        CatalogItem, Category).filter(and_(
+            Category.name == category_name,
+            CatalogItem.category_id == Category.id)).order_by(
+                desc(CatalogItem.date_added)).all()
+    return jsonify(CatalogItems=[i.serialize for i, _ in items])
 
 
 @app.route('/category/all/JSON')
@@ -317,8 +320,13 @@ def categoryCatalogJSONall():
 
 @app.route('/category/<string:category_name>/<string:item_name>/JSON')
 def catalogItemJSON(category_name, item_name):
-    Catalog_Item = session.query(CatalogItem).filter_by(id=item_name).one()
-    return jsonify(Catalog_Item=Catalog_Item.serialize)
+    item = session.query(
+        CatalogItem, Category).filter(and_(
+            Category.name == category_name,
+            CatalogItem.category_id == Category.id,
+            CatalogItem.name == item_name)).order_by(
+                desc(CatalogItem.date_added)).one()
+    return jsonify(Catalog_Item=item[0].serialize)
 
 
 @app.route('/category/JSON')
@@ -492,6 +500,6 @@ def deleteCatalogItem(category_name, item_name):
 
 
 if __name__ == '__main__':
-    app.debug = True
+    # app.debug = True
     app.secret_key = 'super_secret_key'
     app.run(host='0.0.0.0', port=5000)

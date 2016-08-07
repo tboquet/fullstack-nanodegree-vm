@@ -22,8 +22,8 @@ class Category(Base):
     __tablename__ = 'categories'
 
     id = Column(Integer, primary_key=True)
+    name = Column(String(250), nullable=False, index=True, unique=True)
     date_added = Column(DateTime, default=datetime.datetime.utcnow)
-    name = Column(String(250), nullable=False)
     image_loc = Column(String(200), nullable=False)
 
     @property
@@ -39,13 +39,14 @@ class Category(Base):
 class CatalogItem(Base):
     __tablename__ = 'items'
 
-    name = Column(String(80), nullable=False)
+    name = Column(String(80), nullable=False, index=True, unique=True)
     id = Column(Integer, primary_key=True)
     description = Column(String(250))
     date_added = Column(DateTime, default=datetime.datetime.utcnow)
     image_loc = Column(String(200))
     category_id = Column(Integer, ForeignKey('categories.id'))
-    categories = relationship(Category, foreign_keys=[category_id])
+    categories = relationship(Category, foreign_keys=[category_id],
+                              cascade="all, delete-orphan")
 
     # We added this serialize function to be able to send JSON objects in a
     # serializable format
